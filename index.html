@@ -218,10 +218,10 @@
 		return Math.round(_.zip(distances,hooks).map(function(x){return x[0]/x[1]}).reduce(function(x,y){return x*y}))
 	}
 	
-	function decompose(first,second){
+	function decompose(first,second,dim){
 		var tabs = []
 		var boxes = second.reduce(function(x,y){return x+y})
-		Combinatorics.cartesianProduct(getfills(second),partitions(boxes,first,3))
+		Combinatorics.cartesianProduct(getfills(second),partitions(boxes,first,dim))
 					 .toArray().forEach(function(x){
 						 var a = merge(diagram(first),fill(x[0],x[1]))
 						 var p = a.map(function(r){return r.length})
@@ -237,7 +237,7 @@
 		to.append("text").attr("y",scale(4)).text(dimension(one,dim))
 		tt.append("text").attr("y",scale(4)).text(dimension(two,dim))
 	
-		var decomp = decompose(one,two)
+		var decomp = decompose(one,two,dim)
 	
 		decomp.forEach(function(x,i){
 			t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
