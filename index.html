@@ -236,7 +236,15 @@
 
 	function run(one,two,dim){
 		var to = mktbl(canvas,"tabone",diagram(one),[1,1]);
-		var tt = mktbl(canvas,"tabtwo",diagram(two),[6,1]);
+		
+		var f = two.map(function(e,i){
+					return Array(e+1).join().split('').map(function(){
+						return i+1
+					})})
+		
+					console.log(f)
+		
+		var tt = mktbl(canvas,"tabtwo",f,[6,1]);
 		to.append("text").attr("y",scale(4)).text(dimension(one,dim))
 		tt.append("text").attr("y",scale(4)).text(dimension(two,dim))
 	
