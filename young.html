@@ -220,8 +220,7 @@
 	tt.append("text").attr("y",scale(4)).text(dimension(two,3))
 	
 	decomp.forEach(function(x,i){
-		t = mktbl(canvas,"tab"+i,diagram(one),[1+5*i,10]);
-		update("#tab"+i,x)
+		t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
 		t.append("text").attr("y",scale(5)).text(dimension(x.map(function(r){return r.length}),3))
 	})
 	
