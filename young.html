@@ -29,12 +29,30 @@
 		fill:white;
 		stroke:black;
 	}
+	input{
+		width:50px;
+		margin:5px;
+	}
+	#input{
+		width:80%;
+		margin-left:auto;
+		margin-right:auto;
+	}
+	#colo{
+		width:80%;
+		margin-left:auto;
+		margin-right:auto;
+		font-size: 50%;
+	}
 
 	</style>
 </head>
 <body>
 	<h1>Young Tableaux</h1>
-	<svg class="canvas"></svg>
+	<div id="input">
+		<input id="one" type="text" value="2,1">x<input id="two" type="text" value="2,1"><button type="button" id="button">decompose</button>
+	</div>
+	<svg class="canvas" onclick=></svg>
 	<script type="text/javascript" charset="utf-8">
 
 	var scale = d3.scale.linear().domain([0,20]).range([0,600])
@@ -207,23 +225,30 @@
 		})
 		return tabs
 	}
+
+	function run(one,two){
+		var to = mktbl(canvas,"tabone",diagram(one),[1,1]);
+		var tt = mktbl(canvas,"tabtwo",diagram(two),[6,1]);
+		to.append("text").attr("y",scale(4)).text(dimension(one,3))
+		tt.append("text").attr("y",scale(4)).text(dimension(two,3))
 	
-	one = [2,1]
-	two = [2,1]
+		var decomp = decompose(one,two)
 	
-	decomp = decompose(one,two)
+		decomp.forEach(function(x,i){
+			t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
+			t.append("text").attr("y",scale(5)).text(dimension(x.map(function(r){return r.length}),3))
+		})
+	}
 	
-	to = mktbl(canvas,"tabone",diagram(one),[1,1]);
-	tt = mktbl(canvas,"tabtwo",diagram(two),[6,1]);
-	
-	to.append("text").attr("y",scale(4)).text(dimension(one,3))
-	tt.append("text").attr("y",scale(4)).text(dimension(two,3))
-	
-	decomp.forEach(function(x,i){
-		t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
-		t.append("text").attr("y",scale(5)).text(dimension(x.map(function(r){return r.length}),3))
+	$("#button").click(function(){
+		$("svg").empty()
+		var one = $("input#one").val().split(",").map(function(x){return parseInt(x)})
+		var two = $("input#two").val().split(",").map(function(x){return parseInt(x)})
+		run(one,two)		
 	})
 	
+	
 	</script>
+	<div id="colo">contact: Lukas Heinrich lukas.heinrich(at)cern.ch</div>
 </body>
 </html>
