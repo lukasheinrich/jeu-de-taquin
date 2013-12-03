@@ -33,6 +33,9 @@
 		width:50px;
 		margin:5px;
 	}
+	input#dim{
+		width:15px;
+	}
 	#input{
 		width:80%;
 		margin-left:auto;
@@ -50,6 +53,7 @@
 <body>
 	<h1>Young Tableaux</h1>
 	<div id="input">
+		SU(<input id="dim" type="text" value="3">)
 		<input id="one" type="text" value="2,1">x<input id="two" type="text" value="2,1"><button type="button" id="button">decompose</button>
 	</div>
 	<svg class="canvas" onclick=></svg>
@@ -226,17 +230,17 @@
 		return tabs
 	}
 
-	function run(one,two){
+	function run(one,two,dim){
 		var to = mktbl(canvas,"tabone",diagram(one),[1,1]);
 		var tt = mktbl(canvas,"tabtwo",diagram(two),[6,1]);
-		to.append("text").attr("y",scale(4)).text(dimension(one,3))
-		tt.append("text").attr("y",scale(4)).text(dimension(two,3))
+		to.append("text").attr("y",scale(4)).text(dimension(one,dim))
+		tt.append("text").attr("y",scale(4)).text(dimension(two,dim))
 	
 		var decomp = decompose(one,two)
 	
 		decomp.forEach(function(x,i){
 			t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
-			t.append("text").attr("y",scale(5)).text(dimension(x.map(function(r){return r.length}),3))
+			t.append("text").attr("y",scale(5)).text(dimension(x.map(function(r){return r.length}),dim))
 		})
 	}
 	
@@ -244,7 +248,7 @@
 		$("svg").empty()
 		var one = $("input#one").val().split(",").map(function(x){return parseInt(x)})
 		var two = $("input#two").val().split(",").map(function(x){return parseInt(x)})
-		run(one,two)		
+		run(one,two,parseInt($("input#dim").val()))		
 	})
 	
 	
