@@ -52,6 +52,10 @@
 	.selectpart{
 		padding:5px;
 	}
+	.strike{
+		stroke-width:1;
+		stroke:black;
+	}
 
 	</style>
 </head>
@@ -238,9 +242,17 @@
 		var decomp = decompose(one,two,dim)
 	
 		decomp.forEach(function(x,i){
-			t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
-			// update("#tab"+i,x)
-			t.append("text").attr("y",scale(5)).text(dimension(x.map(function(r){return r.length}),dim))
+			var t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
+			var p = x.map(function(r){return r.length})
+			console.log("tr"+transpose(p))
+			transpose(p).map(function(c,i){
+				if(c == dim){
+					t.append("line").attr("x1",scale(i+0.5)).attr("x2",scale(i+0.5))
+									.attr("y1",scale(0-0.5)).attr("y2",scale(dim+0.5))
+									.attr("class","strike")
+				}
+			})
+			t.append("text").attr("y",scale(5)).text(dimension(p,dim))
 		})
 	}
 	
@@ -251,8 +263,7 @@
 		run(one,two,parseInt($("#dimselect").val()))		
 	})
 	
-	_.range(2,10).forEach(function(n){return d3.select("#dimselect").append("option").html(n)})
-	
+	_.range(3,10).forEach(function(n){return d3.select("#dimselect").append("option").html(n)})
 	function computeopts(){
 	d3.selectAll(".selector option").remove()
 	_.range(1,5).forEach(function(nbox){
