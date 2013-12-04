@@ -7,14 +7,14 @@
 	<style type="text/css" media="screen">
 	body{
 		font: 150% "Helvetica";
+		width:80%;
+		margin-left:auto;
+		margin-right:auto;
 	}
 	h1{
 		text-align:center;
 	}
 	.canvas{
-		width:80%;
-		margin-left:auto;
-		margin-right:auto;
 		display:block;
 		border:1px solid black;
 		background-color:#eee;
@@ -40,16 +40,17 @@
 		margin:0px;
 	}
 	#input{
-		width:80%;
 		font-size:50%;
-		margin-left:auto;
-		margin-right:auto;
 	}
 	#colo{
-		width:80%;
-		margin-left:auto;
-		margin-right:auto;
 		font-size: 50%;
+	}
+	.selector{
+		border: 1px solid black;
+		overflow:scroll;
+	}
+	.selectpart{
+		padding:5px;
 	}
 
 	</style>
@@ -57,10 +58,11 @@
 <body>
 	<h1>Young Tableaux</h1>
 	<div id="input">
-		SU(<input id="dim" type="text" value="3">)
-		<input id="one" type="text" value="2,1">x<input id="two" type="text" value="2,1"><button type="button" id="button">decompose</button>
+		SU(<select id="dimselect"></select>)
+		<span><select id="select1" class="selector"></select>x<select id="select2" class="selector"></select></span>
+		<button type="button" id="button">decompose</button>
 	</div>
-	<svg class="canvas" onclick=></svg>
+	<svg class="canvas" id='canvas1'></svg>
 	<script type="text/javascript" charset="utf-8">
 
 	var scale = d3.scale.linear().domain([0,20]).range([0,600])
@@ -111,11 +113,7 @@
 		b.selectAll("rect").transition().delay(300).duration(100).style("fill","white");
 	}
 	
-	tab1 = [[,,],[,]];
-	tab2 = [[1,1,],[2,]];
 	var canvas = d3.selectAll(".canvas");
-	
-
 
 	function update(id,data){
 		m = d3.select(id).selectAll(".row").data(data)
@@ -123,21 +121,6 @@
 		m.enter().call(newbox);
 		m.exit().style("opacity","1").transition().duration(1500).style("opacity","0").remove();
 	}
-
-	// one = [[,,1],[,]]
-	// two = [[1,],[2,]]
-
-
-	// mktbl(canvas,"tab3",tab1,[1,5]);
-	// 
-	// // a.transition().attr("transform","translate("+scale(7)+","+scale(5)+")")
-	// 
-	// $("#tab3").click(function(){update("#tab3",one)});
-	// // update("#tab4",two);
-
-	// $("#tab4 .row .boxgroup .boxfill").unwrap().unwrap();
-	// a.selectAll(".box").transition().duration(1500).style("opacity",0).remove();
-
 
 	function partitions(nbox,extension,nrow,nmax){
 		var nb = nbox
@@ -214,9 +197,13 @@
 		}))
 	}
 	
+	function transpose(part){
+		return _.range(_.max(part)).map(function(i){return _.compact(part.map(function(v){if((v-i) > 0){return v-i}})).length})
+	}
+	
 	function dimension(part,n){
 		var distances = _.flatten(part.map(function(l,r){return _.range(l).map(function(i){return n+i-r})}))
-		var tr = _.range(_.max(part)).map(function(i){return _.compact(part.map(function(v){if((v-i) > 0){return v-i}})).length})
+		var tr = transpose(part)
 		var hooks = _.flatten(_.zip(_.range(part[0]),tr).map(function(il){return _.range(il[1]).map(function(j){return part[j]-il[0]+tr[il[0]]-j-1})}))
 		return Math.round(_.zip(distances,hooks).map(function(x){return x[0]/x[1]}).reduce(function(x,y){return x*y}))
 	}
@@ -258,12 +245,28 @@
 	}
 	
 	$("#button").click(function(){
-		$("svg").empty()
-		var one = $("input#one").val().split(",").map(function(x){return parseInt(x)})
-		var two = $("input#two").val().split(",").map(function(x){return parseInt(x)})
-		run(one,two,parseInt($("input#dim").val()))		
+		$("svg#canvas1").empty()
+		var one = $("#select1").val().split(" ")[1].replace('[','').replace(']','').split(',').map(function(x){return parseInt(x)})
+		var two = $("#select2").val().split(" ")[1].replace('[','').replace(']','').split(',').map(function(x){return parseInt(x)})
+		run(one,two,parseInt($("#dimselect").val()))		
 	})
 	
+	_.range(2,10).forEach(function(n){return d3.select("#dimselect").append("option").html(n)})
+	
+	function computeopts(){
+	d3.selectAll(".selector option").remove()
+	_.range(1,5).forEach(function(nbox){
+		parts = partitions(nbox,[[],[],[]],parseInt($("#dimselect").val()))
+		// d3.select(".selector").selectAll("option").remove()
+		parts.forEach(function(part,i){
+			d3.select("#select1").append("option").html(dimension(part,parseInt($("#dimselect").val()))+" ["+part+"]")
+			d3.select("#select2").append("option").html(dimension(part,parseInt($("#dimselect").val()))+" ["+part+"]")
+		})
+	})
+	}
+
+	$("#dimselect").change(computeopts)
+	computeopts()
 	
 	</script>
 	<div id="colo">contact: Lukas Heinrich lukas.heinrich(at)cern.ch</div>
