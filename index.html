@@ -197,9 +197,13 @@
 		}))
 	}
 	
+	function transpose(part){
+		return _.range(_.max(part)).map(function(i){return _.compact(part.map(function(v){if((v-i) > 0){return v-i}})).length})
+	}
+	
 	function dimension(part,n){
 		var distances = _.flatten(part.map(function(l,r){return _.range(l).map(function(i){return n+i-r})}))
-		var tr = _.range(_.max(part)).map(function(i){return _.compact(part.map(function(v){if((v-i) > 0){return v-i}})).length})
+		var tr = transpose(part)
 		var hooks = _.flatten(_.zip(_.range(part[0]),tr).map(function(il){return _.range(il[1]).map(function(j){return part[j]-il[0]+tr[il[0]]-j-1})}))
 		return Math.round(_.zip(distances,hooks).map(function(x){return x[0]/x[1]}).reduce(function(x,y){return x*y}))
 	}
@@ -259,7 +263,7 @@
 
 	basis = [normalize([1,0]),
 			 normalize([-1,Math.tan(Math.PI/3)]),
-			 normalize([-1,-Math.tan(-Math.PI/3)])
+			 normalize([-1,-Math.tan(Math.PI/3)])
 			]
 
 	var view = gridcanvas.append("g").attr("id","view")
@@ -270,16 +274,57 @@
 		return [d[0]*basis[0][0]+d[1]*basis[1][0],d[0]*basis[0][1]+d[1]*basis[1][1]]
 	}
 	
-	gridcanvas.selectAll(".what").data(latticecoords).enter()
+	function norm(v){
+		return Math.sqrt(v[0]*v[0]+v[1]*v[1])
+	}
+	
+	function perpvec(a){
+		return (a[1] == 0) ? [0,1] : [1,-a[0]/a[1]]
+	}
+	
+	function scalar(a,b){
+		return a[0]*b[0]+a[1]*b[1]
+	}
+	
+	function reflect(start,basis,stepsize){
+		var vperp = normalize(perpvec(basis))
+		var p = Math.round(scalar(start,vperp)/stepsize*2)	
+		if(p<0){vperp = vperp.map(function(x){return -x})}
+		return _.range(0,2*Math.abs(p)+1,2).map(function(x){return x/2}).map(function(i){
+			return [start[0]-i*stepsize*vperp[0],start[1]-i*stepsize*vperp[1]]
+		})
+	}
+	
+	function drawrep(highweight,basis,dim){
+		var tr = transpose([dim-1,1])
+		var stepsize = norm(coords(tr))
+		
+		reflect(coords(highweight),basis[0],stepsize).forEach(function(c){
+			reflect(c,basis[1],stepsize).forEach(function(c2){
+				reflect(c2,basis[2],stepsize).forEach(function(c3){
+					gridcanvas.append("circle")
+					.attr("cx",xscale(c3[0]))
+					.attr("cy",yscale(c3[1]))
+					.attr("r",lscale(0.15))
+					.attr('id','selectpoint')
+					.style("fill",'none')
+					.style("stroke",'blue')
+				})
+			})
+		})
+	}
+	
+	gridcanvas.selectAll(".latticepoint").data(latticecoords).enter()
 		.append("circle")
+		.attr("class","latticepoint")
 		.attr("cx",function(d){return xscale(coords(d)[0])})
 		.attr("cy",function(d){return yscale(coords(d)[1])})
-		.attr("r",lscale(0.075))
+		.attr("r",lscale(0.0))
 		.style("fill",function(d){return (d[0]==0 && d[1]==0) ? 'red' : 'black'})
 		.on('mouseover',function(d){
-		if(d[0]>=d[1]){
-			view.selectAll("*").remove()
-			mktbl(view,'select-tbl',diagram(d),[0,0])
+		// if(d[0]>=d[1] && d[0]>=0 && d[1]>=0){
+			// view.selectAll("*").remove()
+			// mktbl(view,'select-tbl',diagram(d),[0,0])
 			gridcanvas.append("circle")
 			.attr("cx",xscale(coords(d)[0]))
 			.attr("cy",yscale(coords(d)[1]))
@@ -287,11 +332,15 @@
 			.attr('id','selectpoint')
 			.style("fill",'none')
 			.style("stroke",'black')
-		}
+			drawrep(d,basis,3)
+		// }
 		})
 		.on('mouseout',function(d){d3.selectAll('#selectpoint').remove()})
 	
-	
+	gridcanvas.selectAll(".latticepoint").data(latticecoords)
+	.transition().delay(function(d){return 20*(d[0])+20*(10-d[1])})
+	.attr("r",lscale(0.05))
+
 	</script>
 	<div id="colo">contact: Lukas Heinrich lukas.heinrich(at)cern.ch</div>
 </body>
