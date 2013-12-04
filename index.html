@@ -244,12 +244,27 @@
 		decomp.forEach(function(x,i){
 			var t = mktbl(canvas,"tab"+i,x,[1+5*i,10]);
 			var p = x.map(function(r){return r.length})
-			console.log("tr"+transpose(p))
 			transpose(p).map(function(c,i){
 				if(c == dim){
 					t.append("line").attr("x1",scale(i+0.5)).attr("x2",scale(i+0.5))
 									.attr("y1",scale(0-0.5)).attr("y2",scale(dim+0.5))
 									.attr("class","strike")
+					t.selectAll(".row .boxgroup:nth-child("+(i+1)+")")
+					.transition().duration(1500).delay(1500)
+						.attr("transform","translate(0,"+scale(-2)+")")
+					.transition()
+						.attr("opacity",0).remove()
+					t.selectAll("line")
+					.transition().duration(1500).delay(1500)
+						.attr("transform","translate("+scale(0)+","+scale(-2)+")")
+					.transition()
+						.attr("opacity",0).remove()
+					if(dimension(p,dim) == 1){
+						t.append("circle")
+							.attr("cx",scale(1)).attr("cy",scale(1)).attr("r",scale(.2))
+							.style("stroke","black").style("opacity",0)
+							.transition().delay(3000).style("opacity",1)
+					}
 				}
 			})
 			t.append("text").attr("y",scale(5)).text(dimension(p,dim))
@@ -268,7 +283,6 @@
 	d3.selectAll(".selector option").remove()
 	_.range(1,5).forEach(function(nbox){
 		parts = partitions(nbox,[[],[],[]],parseInt($("#dimselect").val()))
-		// d3.select(".selector").selectAll("option").remove()
 		parts.forEach(function(part,i){
 			d3.select("#select1").append("option").html(dimension(part,parseInt($("#dimselect").val()))+" ["+part+"]")
 			d3.select("#select2").append("option").html(dimension(part,parseInt($("#dimselect").val()))+" ["+part+"]")
