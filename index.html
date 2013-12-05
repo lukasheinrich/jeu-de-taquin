@@ -127,7 +127,7 @@
 		b.selectAll("rect").transition().delay(300).duration(100).style("fill","white");
 	}
 	
-	var canvas = d3.selectAll("#canvas");
+	var canvas = d3.selectAll("#canvas1");
 	function update(id,data){
 		m = d3.select(id).selectAll(".row").data(data)
 			.selectAll(".boxgroup").data(function(d){return d;});
