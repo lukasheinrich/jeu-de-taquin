@@ -273,6 +273,13 @@
 	function coords(d){
 		return [d[0]*basis[0][0]+d[1]*basis[1][0],d[0]*basis[0][1]+d[1]*basis[1][1]]
 	}
+
+	function integs(d,b){
+		var row = d[1]/b[1][1]
+		var onx = d[0]-row*b[1][0]
+		var ints = [Math.round(onx),Math.round(row)]
+		return ints
+	}
 	
 	function norm(v){
 		return Math.sqrt(v[0]*v[0]+v[1]*v[1])
@@ -286,12 +293,15 @@
 		return a[0]*b[0]+a[1]*b[1]
 	}
 	
-	function reflect(start,basis,stepsize){
-		var vperp = normalize(perpvec(basis))
+	
+	function reflect(start,basis,perpto,stepsize){
+		var start = coords(start)
+		var vperp = normalize(perpvec(perpto))
 		var p = Math.round(scalar(start,vperp)/stepsize*2)	
 		if(p<0){vperp = vperp.map(function(x){return -x})}
-		return _.range(0,2*Math.abs(p)+1,2).map(function(x){return x/2}).map(function(i){
-			return [start[0]-i*stepsize*vperp[0],start[1]-i*stepsize*vperp[1]]
+		return _.range(2,2*Math.abs(p)+1,2).map(function(x){return x/2}).map(function(i){
+			var point = [start[0]-i*stepsize*vperp[0],start[1]-i*stepsize*vperp[1]]
+			return integs(point,basis)
 		})
 	}
 	
@@ -299,16 +309,67 @@
 		var tr = transpose([dim-1,1])
 		var stepsize = norm(coords(tr))
 		
-		reflect(coords(highweight),basis[0],stepsize).forEach(function(c){
-			reflect(c,basis[1],stepsize).forEach(function(c2){
-				reflect(c2,basis[2],stepsize).forEach(function(c3){
-					gridcanvas.append("circle")
-					.attr("cx",xscale(c3[0]))
-					.attr("cy",yscale(c3[1]))
-					.attr("r",lscale(0.15))
+		startingpoints = [highweight]
+		
+		_.range(tr[1]*highweight[1]).forEach(function(i){
+			var point = [highweight[0]-(i+1)*tr[0],highweight[1]-(i+1)*tr[1]]
+			if(point[0]>=point[1]) startingpoints.push(point) //hexagons
+		})
+		
+		
+		var last = startingpoints.pop()
+		
+		var triangles = []
+		
+		if(last[0] == 0 && last[0] == 0){
+			startingpoints.push(last)
+		}
+		else{
+			triangles.push(last)
+			console.log(triangles)
+		}
+		
+		
+		if(triangles.length>0){
+			_.range(1,1+Math.floor(triangles[0][0]/3)).forEach(function(i){
+				triangles.push([last[0]-3*i,last[1] == 0 ? 0 : last[1]-3*i])
+			})
+		}		
+		
+		var nrhex = startingpoints.length;
+		console.log(startingpoints.length+" hexagons");		
+		console.log(triangles.length+" triangles")
+		
+		triangles.forEach(function(x){startingpoints.push(x)})
+
+		var rings = []
+		
+		startingpoints.forEach(function(starting){
+			var ring = [starting];
+			[2,1,0,2,1,0].forEach(function(i){
+				reflect(ring.slice(-1)[0],basis,basis[i],stepsize).forEach(function(c){
+					ring.push(c)
+				})
+			})
+			if(starting[0] != 0 || starting[1] != 0){
+				ring.pop()
+			}
+			rings.push(ring)
+		})
+		
+		rings.forEach(function(ring,i){
+			ring.forEach(function(c,j){
+				_.range(Math.min(i+1,nrhex+1)).forEach(function(dim){
+				gridcanvas.append("circle")
+					.attr("cx",xscale(coords(c)[0]))
+					.attr("cy",yscale(coords(c)[1]))
 					.attr('id','selectpoint')
 					.style("fill",'none')
 					.style("stroke",'blue')
+					.style("stroke-width",2)
+					// .attr("r",lscale(0))
+					// .transition().delay(50*i+50*j).duration(1500)
+					.attr("r",lscale(0.15+0.06*dim))
 				})
 			})
 		})
@@ -319,12 +380,12 @@
 		.attr("class","latticepoint")
 		.attr("cx",function(d){return xscale(coords(d)[0])})
 		.attr("cy",function(d){return yscale(coords(d)[1])})
-		.attr("r",lscale(0.0))
+		.attr("r",lscale(0))
 		.style("fill",function(d){return (d[0]==0 && d[1]==0) ? 'red' : 'black'})
 		.on('mouseover',function(d){
-		// if(d[0]>=d[1] && d[0]>=0 && d[1]>=0){
-			// view.selectAll("*").remove()
-			// mktbl(view,'select-tbl',diagram(d),[0,0])
+		if(d[0]>=d[1] && d[0]>=0 && d[1]>=0){
+			view.selectAll("*").remove()
+			mktbl(view,'select-tbl',diagram(d),[0,0])
 			gridcanvas.append("circle")
 			.attr("cx",xscale(coords(d)[0]))
 			.attr("cy",yscale(coords(d)[1]))
@@ -333,12 +394,12 @@
 			.style("fill",'none')
 			.style("stroke",'black')
 			drawrep(d,basis,3)
-		// }
+		}
 		})
 		.on('mouseout',function(d){d3.selectAll('#selectpoint').remove()})
 	
 	gridcanvas.selectAll(".latticepoint").data(latticecoords)
-	.transition().delay(function(d){return 20*(d[0])+20*(10-d[1])})
+	.transition().duration(500).delay(function(d){return 20*(d[0])+20*(10-d[1])})
 	.attr("r",lscale(0.05))
 
 	</script>
