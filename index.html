@@ -461,6 +461,7 @@
 		.on('mouseout',function(d){
 			d3.selectAll('#selectpoint').remove()
 			d3.selectAll('.dim').remove()
+			d3.selectAll("#select-tbl").remove()
 		})
 	
 	gridcanvas.selectAll(".latticepoint").data(latticecoords)
