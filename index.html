@@ -435,10 +435,10 @@
 			view.selectAll("*").remove()
 			mktbl(view,'select-tbl',diagram(d),[0,0])
 			drawrep(d,basis,3)
-			gridcanvas.append("text").attr("class","dim").attr("x",lscale(1)).attr("y",lscale(5))
+			gridcanvas.append("text").attr("class","dim").attr("x",lscale(0.75)).attr("y",lscale(4.5))
 			.text(dimension(d,3))
-			gridcanvas.append("text").attr("class","dim").attr("x",lscale(1)).attr("y",lscale(6))
-			.text(d3.selectAll("#selectpoint")[0].length)
+			// gridcanvas.append("text").attr("class","dim").attr("x",lscale(1)).attr("y",lscale(6))
+			// .text(d3.selectAll("#selectpoint")[0].length)
 		}
 		})
 		.on('mouseout',function(d){
