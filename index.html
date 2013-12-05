@@ -76,6 +76,8 @@
 		<button type="button" id="button">decompose</button>
 	</div>
 	<svg class="canvas" id='canvas'></svg>
+	<h2>Weight Diagrams</h2>
+	<p>Hover over weights in the Weyl chamber to see weight diagrams for the coreesponding irrep with the selected weight as highest weight</p>
 	<svg class="canvas" id='canvas2'></svg>
 	<script type="text/javascript" charset="utf-8">
 
@@ -422,6 +424,21 @@
 			})
 		})
 	}
+	
+	var weyl = [{"x":0, "y":0},
+				{"x":10*basis[0][0],"y":10*basis[0][1]},
+				{"x":10*basis[0][0]-10*basis[2][0],"y":10*basis[0][1]-10*basis[2][1]},
+				{"x":-10*basis[2][0],"y":-10*basis[2][1]},
+				{"x":0,"y":0}];
+				
+	gridcanvas.selectAll("polygon").data([weyl]).enter()
+		.append("polygon").attr("points",function(d) { 
+	        return d.map(function(d) {
+	            return [xscale(d.x),yscale(d.y)].join(",");
+	        }).join(" ");
+		})
+	    .attr("fill","steelblue")
+	    .attr("stroke-width",2);
 	
 	gridcanvas.selectAll(".latticepoint").data(latticecoords).enter()
 		.append("circle")
